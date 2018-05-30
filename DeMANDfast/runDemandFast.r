@@ -21,8 +21,9 @@ runDeMANDFast <- function (dobj, fgIndex=NULL, bgIndex=NULL){
 	inputNetwork <- x@network
 	platformGene <- unique(expAnno[, 2])
 
-	ww = which(inputNetwork[,1] %in% platformGene & inputNetwork[,2] %in% platformGene)
-	interactome = inputNetwork[ww,]
+	ww <<- which(inputNetwork[,1] %in% platformGene & inputNetwork[,2] %in% platformGene)
+	cat(length(ww))
+	interactome <<- inputNetwork[ww,]
 
 	analGene <- intersect(as.vector(interactome), platformGene)
 
@@ -51,7 +52,7 @@ runDeMANDFast <- function (dobj, fgIndex=NULL, bgIndex=NULL){
 	#remove self-loops
 	pOut <- which(p1 == p2)
 	#remove self loops, they are however allowed in the later p-value analysis
-	permutedInteractome <- cbind(p1, p2)[-pOut,]
+	permutedInteractome <- cbind(p1, p2)#[-pOut,]
 
 	#compute the kernel-bandwidth
 	sigmaFG = round(kernelDensityBandwidth(expData[,fgIndex]))^2
@@ -65,20 +66,20 @@ runDeMANDFast <- function (dobj, fgIndex=NULL, bgIndex=NULL){
 	edgeKLD = getSigKLDedge(interactome, expData, sigmaFG, sigmaBG, fgIndex, bgIndex)
         message("RunDeMANDfast: Make a null distribution for KL divergence.....")
 	#compute null distribution with randomized network
-	nullmodel = getSigKLDedge(permutedInteractome, expData, sigmaFG, sigmaBG, fgIndex, bgIndex)
+	nullmodel <<- getSigKLDedge(permutedInteractome, expData, sigmaFG, sigmaBG, fgIndex, bgIndex)
 
-	pval = getKLDpvalue(edgeKLD[,3], nullmodel[,3])
-	edgeKLD = cbind(edgeKLD, pval)
+	pval <<- getKLDpvalue(edgeKLD[,3], nullmodel[,3])
+	edgeKLD <<- cbind(edgeKLD, pval)
 
 	#get integrated p-value
 	#intPval = getCombinedPvalue(edgeKLD, expData)
 	#in the demand code the actual expression is used and not the rank transformed. Also the full expression matrix is used rather than the
 	#control and treatment subsamples.
 	message("RunDeMANDfast: Estimate dysregulation of the genes.....")
-	intPval = getCombinedPvalue(edgeKLD, tempExp)
+	intPval <<- getCombinedPvalue(edgeKLD, tempExp)
 
 	#correct for multiple hypothesis testing
-	intPvalAdjustedp <- p.adjust(intPval, "fdr")
+	intPvalAdjustedp <<- p.adjust(intPval, "fdr")
 
 	#make a nice data.frame with the genes and their significance
 	finalPrediction <- data.frame(moaGene = names(intPval), Pvalue = intPval, adjustedPvalue = intPvalAdjustedp)

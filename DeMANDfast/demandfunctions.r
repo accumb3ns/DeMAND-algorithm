@@ -50,9 +50,8 @@ getSigKLDedge <- function(interactome, expData, sigmaFG, sigmaBG, fgIndex, bgInd
     r2 = rep(1:ncol(expData), each = ncol(expData), times = 1)
 
     edgeKLD = list()
-
+    
     for(i in 1:nrow(interactome)){
-
         fgPD = getPDM(expData,r1, r2, expData[interactome[i,1],fgIndex], expData[interactome[i,2],fgIndex], sigmaFG[interactome[i,1]], sigmaFG[interactome[i,2]])
         bgPD = getPDM(expData,r1, r2, expData[interactome[i,1],bgIndex], expData[interactome[i,2],bgIndex], sigmaBG[interactome[i,1]], sigmaBG[interactome[i,2]])
 
@@ -94,12 +93,14 @@ getCombinedPvalue <- function(edgeKLD, expData) {
     genes = names(genes)[which(genes >= 2)]
 
     for(g in genes){
-        w1 = which(edgeKLD[,1] == g)
-        w2 = which(edgeKLD[,2] == g)
+        cat(g)
+        w1 <<- which(edgeKLD[,1] == g)
+        w2 <<- which(edgeKLD[,2] == g)
+        cat(w1, " and ", w2)
         
-        neighborList = unique(c(edgeKLD[w1,2], edgeKLD[w2,1]))
+        neighborList <<- unique(c(edgeKLD[w1,2], edgeKLD[w2,1]))
 
-        pvals = as.numeric(edgeKLD[c(w1,w2),4])
+        pvals <<- as.numeric(edgeKLD[c(w1,w2),4])
         pvals[which(pvals == 0)] <- 10^-20
         intpChisq <- -2 * sum(log(pvals))
 
@@ -118,7 +119,7 @@ getCombinedPvalue <- function(edgeKLD, expData) {
         }
         residuals <- do.call(cbind,residualList)
 
-        residualCorrelation = cor(residuals)
+        residualCorrelation <<- cor(residuals)
         residualCorrelation = c(residualCorrelation[upper.tri(residualCorrelation)])
 
         #math magic 
